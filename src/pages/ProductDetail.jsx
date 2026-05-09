@@ -97,11 +97,18 @@ export default function ProductDetail() {
                 alt={product.name} 
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
-              {product.discount && (
-                <div className="absolute top-6 left-6 bg-[#8a1c31] text-white px-4 py-1.5 rounded-full text-xs font-bold tracking-widest shadow-lg">
-                  {product.discount} OFF
+              {product.stockStatus === "Out of Stock" ? (
+                <div className="absolute top-6 left-6 bg-stone-900 text-white px-5 py-2 rounded-full text-xs font-bold tracking-widest shadow-2xl">
+                  OUT OF STOCK
+                </div>
+              ) : product.isOffer && product.offerDetails && (
+                <div className="absolute top-6 left-6 bg-[#8a1c31] text-white px-5 py-2 rounded-full text-xs font-bold tracking-widest shadow-2xl uppercase">
+                  {product.offerDetails.discountType === "Percentage (%)" 
+                    ? `${product.offerDetails.discountValue}% OFF` 
+                    : `₹${product.offerDetails.discountValue} OFF`}
                 </div>
               )}
+
               
               {/* Image Index Indicator */}
               <div className="absolute bottom-6 right-6 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1.5 rounded-full tracking-widest">
@@ -141,16 +148,46 @@ export default function ProductDetail() {
                 {product.name}
               </h1>
 
-              <div className="flex items-baseline gap-4 mb-6">
-                <p className="text-3xl font-medium text-[#8a1c31]">
-                  ₹{(product.price || 0).toLocaleString('en-IN')}
-                </p>
-                {product.discount && (
-                  <p className="text-xl text-stone-400 line-through">
-                    ₹{((product.price || 0) / 0.9).toLocaleString('en-IN')}
+              <div className="flex flex-col gap-1 mb-6">
+                <div className="flex items-baseline gap-4">
+                  {product.isOffer && product.offerDetails ? (
+                    <>
+                      <p className="text-4xl md:text-5xl font-bold text-[#8a1c31]">
+                        ₹{
+                          (product.offerDetails.discountType === "Percentage (%)" 
+                            ? Math.round(product.price * (1 - product.offerDetails.discountValue / 100))
+                            : Math.max(0, product.price - product.offerDetails.discountValue)
+                          ).toLocaleString('en-IN')
+                        }
+                      </p>
+                      <p className="text-2xl text-stone-300 line-through font-light">
+                        ₹{product.price?.toLocaleString('en-IN')}
+                      </p>
+                    </>
+                  ) : product.originalPrice ? (
+                    <>
+                      <p className="text-4xl md:text-5xl font-bold text-[#8a1c31]">
+                        ₹{product.price?.toLocaleString('en-IN')}
+                      </p>
+                      <p className="text-2xl text-stone-300 line-through font-light">
+                        ₹{product.originalPrice.toLocaleString('en-IN')}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-4xl md:text-5xl font-bold text-[#8a1c31]">
+                      ₹{(product.price || 0).toLocaleString('en-IN')}
+                    </p>
+                  )}
+                </div>
+
+                {product.stockStatus === "Out of Stock" && (
+                  <p className="text-red-500 font-bold text-sm mt-2 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                    Currently Unavailable
                   </p>
                 )}
               </div>
+
 
               <p className="text-stone-600 leading-relaxed mb-8 text-lg font-light">
                 {product.description}
@@ -240,18 +277,20 @@ export default function ProductDetail() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <button 
                   onClick={() => addToCart(product, quantity)}
-                  className="flex-1 bg-[#8a1c31] text-white py-4 rounded-2xl flex items-center justify-center gap-3 font-bold uppercase tracking-widest text-xs hover:bg-stone-900 transition-all duration-500 shadow-xl shadow-[#8a1c31]/20"
+                  disabled={product.stockStatus === "Out of Stock"}
+                  className="flex-1 bg-[#8a1c31] text-white py-5 rounded-2xl flex items-center justify-center gap-3 font-bold uppercase tracking-widest text-xs hover:bg-stone-900 transition-all duration-500 shadow-xl shadow-[#8a1c31]/20 disabled:opacity-50 disabled:bg-stone-400 disabled:shadow-none"
                 >
                   <ShoppingCart size={18} />
-                  Add to Cart
+                  {product.stockStatus === "Out of Stock" ? "Out of Stock" : "Add to Cart"}
                 </button>
                 <button 
                   onClick={() => navigate('/collections')}
-                  className="flex-1 border-2 border-[#8a1c31] text-[#8a1c31] py-4 rounded-2xl font-bold uppercase tracking-widest text-xs hover:bg-[#8a1c31] hover:text-white transition-all duration-500"
+                  className="flex-1 border-2 border-[#8a1c31] text-[#8a1c31] py-5 rounded-2xl font-bold uppercase tracking-widest text-xs hover:bg-[#8a1c31] hover:text-white transition-all duration-500"
                 >
                   Browse More
                 </button>
               </div>
+
             </div>
 
             {/* Features/Trust */}

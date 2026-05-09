@@ -37,7 +37,7 @@ export const ShopProvider = ({ children }) => {
           id: doc.id,
           ...doc.data()
         }))
-        .filter(product => product.name && product.price > 0); // Only show valid products
+        .filter(product => product.name && product.price > 0 && product.visible !== false); // Only show valid and visible products
       setProducts(productsData);
       setLoading(false);
     });
@@ -77,14 +77,24 @@ export const ShopProvider = ({ children }) => {
 
     try {
       const userRef = doc(db, 'users', userToUse.uid);
+      let finalPrice = product.price || 0;
+      if (product.isOffer && product.offerDetails) {
+        if (product.offerDetails.discountType === "Percentage (%)") {
+          finalPrice = Math.round(finalPrice * (1 - product.offerDetails.discountValue / 100));
+        } else {
+          finalPrice = Math.max(0, finalPrice - product.offerDetails.discountValue);
+        }
+      }
+
       const cartItem = {
         id: product.id,
         name: product.name,
-        price: product.price || 0,
+        price: finalPrice,
         image: product.image,
         quantity: quantity,
         addedAt: new Date().toISOString()
       };
+
 
       // Check if already in cart
       const existingItem = cart.find(item => item.id === product.id);

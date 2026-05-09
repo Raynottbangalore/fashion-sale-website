@@ -16,7 +16,10 @@ export default function Collections() {
     
     // Category Filter
     if (filters.category !== 'All') {
-      result = result.filter(p => p.category === filters.category);
+      result = result.filter(p => 
+        (p.categories && Array.isArray(p.categories) && p.categories.includes(filters.category)) || 
+        p.category === filters.category
+      );
     }
     
     // Price Filter
@@ -32,13 +35,14 @@ export default function Collections() {
 
     // Sort
     if (sortBy === 'new') {
-      const newArrivals = result.filter(p => p.isNew);
-      if (newArrivals.length > 0) {
-        result = newArrivals;
-      } else {
-        // Fallback to sorting by creation date if no "isNew" flag is found
-        result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      }
+      result.sort((a, b) => {
+        // First priority: manually marked as New Arrival (homepageLatest)
+        if (a.homepageLatest && !b.homepageLatest) return -1;
+        if (!a.homepageLatest && b.homepageLatest) return 1;
+        
+        // Second priority: actual creation date
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
     }
     if (sortBy === 'price-low') result.sort((a, b) => a.price - b.price);
     if (sortBy === 'price-high') result.sort((a, b) => b.price - a.price);

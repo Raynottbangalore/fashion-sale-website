@@ -11,9 +11,9 @@ export default function Home() {
   const { products, loading, seedProducts } = useShop();
 
   // Filter products for different sections
-  // Prefer products marked as 'isNew', fallback to most recently created
-  const latestProducts = products.some(p => p.isNew) 
-    ? products.filter(p => p.isNew).slice(0, 4)
+  // Prefer products marked for homepage latest collection
+  const latestProducts = products.some(p => p.homepageLatest) 
+    ? products.filter(p => p.homepageLatest)
     : [...products].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 4);
   const budgetProducts = products.filter(p => {
     if (activeBudget === 'Under ₹2,000') return p.price < 2000;

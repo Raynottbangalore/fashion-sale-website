@@ -35,6 +35,8 @@ export default function ProductCard({ product }) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleCardClick}
+      style={product.stockStatus === "Out of Stock" ? { opacity: 0.8 } : {}}
+
     >
       {/* Top right heart icon */}
       <button 
@@ -55,15 +57,22 @@ export default function ProductCard({ product }) {
         />
         
         {/* Badges */}
-        {product.discount ? (
-          <div className="absolute top-0 left-0 bg-[#8a1c31] text-white text-[10px] font-bold tracking-wider px-3 py-1 z-10 rounded-br-lg">
-            {product.discount} OFF
+        {product.stockStatus === "Out of Stock" ? (
+          <div className="absolute top-3 left-3 bg-stone-800 text-white text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full z-10 font-bold shadow-lg">
+            Out of Stock
           </div>
-        ) : product.isNew && (
+        ) : product.isOffer && product.offerDetails ? (
+          <div className="absolute top-0 left-0 bg-[#8a1c31] text-white text-[10px] font-bold tracking-wider px-3 py-1.5 z-10 rounded-br-xl shadow-md uppercase">
+            {product.offerDetails.discountType === "Percentage (%)" 
+              ? `${product.offerDetails.discountValue}% OFF` 
+              : `₹${product.offerDetails.discountValue} OFF`}
+          </div>
+        ) : product.homepageLatest && (
           <div className="absolute top-3 left-3 bg-[#8a1c31] text-white text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full z-10 font-medium shadow-sm">
             New Arrival
           </div>
         )}
+
 
         {/* Hover Actions */}
         <div 
@@ -98,9 +107,28 @@ export default function ProductCard({ product }) {
       <div className="text-center px-4 pb-4">
         <p className="text-[11px] text-stone-400 uppercase tracking-[0.2em] mb-2 font-medium">{product.category}</p>
         <h3 className="font-playfair text-lg text-stone-800 mb-2 line-clamp-1 group-hover:text-[#8a1c31] transition-colors duration-300">{product.name}</h3>
-        <p className="text-[#8a1c31] font-medium text-lg">
-          ₹{(product.price || 0).toLocaleString('en-IN')}
+        <p className="text-[#8a1c31] font-bold text-lg flex items-center justify-center gap-2">
+          {product.isOffer && product.offerDetails ? (
+            <>
+              <span className="text-stone-400 text-sm line-through font-normal">₹{product.price?.toLocaleString('en-IN')}</span>
+              <span>₹{
+                (product.offerDetails.discountType === "Percentage (%)" 
+                  ? Math.round(product.price * (1 - product.offerDetails.discountValue / 100))
+                  : Math.max(0, product.price - product.offerDetails.discountValue)
+                ).toLocaleString('en-IN')
+              }</span>
+            </>
+          ) : product.originalPrice ? (
+            <>
+              <span className="text-stone-400 text-sm line-through font-normal">₹{product.originalPrice.toLocaleString('en-IN')}</span>
+              <span>₹{product.price?.toLocaleString('en-IN')}</span>
+            </>
+          ) : (
+            <span>₹{(product.price || 0).toLocaleString('en-IN')}</span>
+          )}
         </p>
+
+
       </div>
     </motion.div>
   );

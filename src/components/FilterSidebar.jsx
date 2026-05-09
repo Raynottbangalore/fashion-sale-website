@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useShop } from '../context/ShopContext';
 
 export default function FilterSidebar({ onFilterChange }) {
+  const { products } = useShop();
   const [openSection, setOpenSection] = useState({
     categories: true,
     price: true,
@@ -24,7 +26,23 @@ export default function FilterSidebar({ onFilterChange }) {
     onFilterChange({ category: selectedCategory, price: price });
   };
 
-  const categories = ['All', 'Silk', 'Bridal', 'Designer', 'Cotton'];
+  const categories = useMemo(() => {
+    const baseCategories = [
+      "Applique/emb", "Banarasi Silk", "cotton", "Cotton", "Cotton/Jamdhani", "Crepe", "Daily Wear", "Dola Bandhej"
+    ];
+    
+    const productCategories = (products || []).flatMap(p => {
+      if (p.categories && Array.isArray(p.categories)) return p.categories;
+      if (p.category) return [p.category];
+      return [];
+    });
+    
+    const uniqueCats = Array.from(new Set([...baseCategories, ...productCategories])).filter(Boolean);
+    uniqueCats.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+    
+    return ['All', ...uniqueCats];
+  }, [products]);
+
   const prices = ['All', 'Under ₹10,000', '₹10,000 - ₹20,000', 'Over ₹20,000'];
 
   return (

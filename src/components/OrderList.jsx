@@ -84,10 +84,18 @@ export default function OrderList() {
     }
   };
 
+  // Calculate stats
+  const stats = {
+    total: orders.length,
+    pending: orders.filter(o => o.status === 'Pending').length,
+    shipped: orders.filter(o => o.status === 'Shipped').length,
+    revenue: orders.reduce((acc, curr) => acc + (curr.status !== 'Cancelled' ? curr.total : 0), 0)
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold-500 mb-4"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6B2D2D] mb-4"></div>
         <p className="text-stone-500 font-medium">Fetching orders...</p>
       </div>
     );
@@ -104,8 +112,28 @@ export default function OrderList() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="overflow-x-auto rounded-2xl border border-stone-100 shadow-sm">
+    <div className="space-y-10">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
+          <p className="text-[10px] text-stone-400 font-bold uppercase tracking-widest mb-1">Total Orders</p>
+          <p className="text-2xl font-playfair font-bold text-stone-800">{stats.total}</p>
+        </div>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
+          <p className="text-[10px] text-stone-400 font-bold uppercase tracking-widest mb-1">Pending Orders</p>
+          <p className="text-2xl font-playfair font-bold text-amber-600">{stats.pending}</p>
+        </div>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
+          <p className="text-[10px] text-stone-400 font-bold uppercase tracking-widest mb-1">Shipped Orders</p>
+          <p className="text-2xl font-playfair font-bold text-blue-600">{stats.shipped}</p>
+        </div>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
+          <p className="text-[10px] text-stone-400 font-bold uppercase tracking-widest mb-1">Total Revenue</p>
+          <p className="text-2xl font-playfair font-bold text-green-600">₹{stats.revenue.toLocaleString('en-IN')}</p>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto rounded-2xl border border-stone-200 shadow-sm bg-white">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-stone-50 text-stone-500 text-[10px] uppercase tracking-[0.2em] font-bold">
