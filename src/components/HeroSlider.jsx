@@ -40,7 +40,28 @@ export default function HeroSlider() {
         const q = query(collection(db, "carousel"), orderBy("order", "asc"));
         const querySnapshot = await getDocs(q);
         const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setSlides(data.length > 0 ? data : defaultSlides);
+        const finalSlides = data.length > 0 ? data : defaultSlides;
+        
+        // Preload the first image specifically to avoid white flash
+        if (finalSlides.length > 0) {
+          await new Promise((resolve) => {
+            const img = new Image();
+            img.src = finalSlides[0].image;
+            img.onload = resolve;
+            img.onerror = resolve; // Continue even if image fails
+            // Timeout after 2s to not block the site indefinitely
+            setTimeout(resolve, 2000);
+          });
+        }
+        
+        setSlides(finalSlides);
+
+        // Preload the rest of the images in the background
+        finalSlides.slice(1).forEach(slide => {
+          const img = new Image();
+          img.src = slide.image;
+        });
+
       } catch (err) {
         console.error("Error fetching slides:", err);
         setSlides(defaultSlides);
