@@ -327,7 +327,7 @@ const ProductForm = ({ products = [], onProductAdded, editingProduct, onCancelEd
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto animate-in fade-in duration-500 pb-20">
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 animate-in fade-in duration-500 pb-20">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
@@ -360,7 +360,7 @@ const ProductForm = ({ products = [], onProductAdded, editingProduct, onCancelEd
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Card 1: Product Information */}
-        <div className="bg-white rounded-2xl shadow-sm border-2 border-stone-200 p-10">
+        <div className="bg-white rounded-2xl shadow-sm border-2 border-stone-200 p-5 sm:p-10">
           <h3 className="text-xl font-bold text-stone-800 mb-6">Product Information</h3>
           
           <div className="flex flex-col lg:flex-row gap-x-12 gap-y-8">
@@ -395,7 +395,7 @@ const ProductForm = ({ products = [], onProductAdded, editingProduct, onCancelEd
 
               <div className="space-y-3">
                 <label className="text-[13px] font-bold text-stone-800">Pricing Details (₹)</label>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-[11px] text-stone-500 font-medium">Current Price</label>
                     <input type="number" name="price" required placeholder="0" className="w-full px-3 py-2 bg-white border-2 border-stone-200 rounded-lg outline-none text-[14px] text-stone-800 shadow-sm" value={formData.price} onChange={handleChange} />
@@ -428,7 +428,7 @@ const ProductForm = ({ products = [], onProductAdded, editingProduct, onCancelEd
                 </div>
                 
                 {showCatInput && (
-                  <div className="flex gap-2 animate-in slide-in-from-top duration-300">
+                  <div className="flex flex-col sm:flex-row gap-2 animate-in slide-in-from-top duration-300">
                     <input 
                       type="text" 
                       value={newCat} 
@@ -440,11 +440,11 @@ const ProductForm = ({ products = [], onProductAdded, editingProduct, onCancelEd
                   </div>
                 )}
 
-                <div className="bg-white border-2 border-stone-200 rounded-lg p-5 max-h-[220px] overflow-y-auto flex flex-col gap-y-4 shadow-inner custom-scrollbar">
+                <div className="bg-white border-2 border-stone-200 rounded-lg p-3 sm:p-5 max-h-[220px] overflow-y-auto flex flex-col gap-y-4 shadow-inner custom-scrollbar">
                   {availableCategories.map((cat, idx) => (
                     <div 
                       key={cat} 
-                      className="flex items-center justify-between group gap-3"
+                      className="flex flex-row items-center justify-between group gap-2"
                     >
                       <div className="flex items-center gap-3 flex-grow overflow-hidden">
                         <input 
@@ -479,7 +479,7 @@ const ProductForm = ({ products = [], onProductAdded, editingProduct, onCancelEd
               </div>
 
               <div className="space-y-4 pt-4">
-                <div className="flex items-center gap-4 p-5 bg-emerald-50 rounded-2xl border-2 border-emerald-100 shadow-sm transition-all hover:shadow-md">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 sm:p-5 bg-emerald-50 rounded-2xl border-2 border-emerald-100 shadow-sm transition-all hover:shadow-md">
                   <div className="relative flex items-center">
                     <input 
                       type="checkbox" 
@@ -500,7 +500,7 @@ const ProductForm = ({ products = [], onProductAdded, editingProduct, onCancelEd
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 p-5 bg-blue-50 rounded-2xl border-2 border-blue-100 shadow-sm transition-all hover:shadow-md">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 sm:p-5 bg-blue-50 rounded-2xl border-2 border-blue-100 shadow-sm transition-all hover:shadow-md">
                   <input 
                     type="checkbox" 
                     id="visible"
@@ -589,7 +589,7 @@ const ProductForm = ({ products = [], onProductAdded, editingProduct, onCancelEd
         </div>
 
         {/* Card 2: Product Details */}
-        <div className="bg-white rounded-3xl shadow-sm border-2 border-stone-200 p-10 space-y-10">
+        <div className="bg-white rounded-3xl shadow-sm border-2 border-stone-200 p-5 sm:p-10 space-y-8 sm:space-y-10">
           <h3 className="text-lg font-bold text-stone-800">Product Details</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
@@ -638,18 +638,18 @@ const ProductForm = ({ products = [], onProductAdded, editingProduct, onCancelEd
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-4 pt-4">
+        <div className="flex flex-col sm:flex-row items-center justify-end gap-4 pt-4">
           <button
             type="button"
             onClick={onCancelEdit}
-            className="px-10 py-3.5 bg-[#475569] text-white rounded-xl font-bold shadow-lg hover:bg-stone-800 transition-all text-sm"
+            className="w-full sm:w-auto px-10 py-3.5 bg-[#475569] text-white rounded-xl font-bold shadow-lg hover:bg-stone-800 transition-all text-sm"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="px-10 py-3.5 bg-[#6B2D2D] text-white rounded-xl font-bold shadow-lg hover:bg-stone-900 transition-all text-sm flex items-center gap-2 disabled:opacity-50"
+            className="w-full sm:w-auto px-10 py-3.5 bg-[#6B2D2D] text-white rounded-xl font-bold shadow-lg hover:bg-stone-900 transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {loading ? <Loader2 className="animate-spin" size={18} /> : <Box size={18} />}
             <span>{editingProduct ? "Update Product" : "Add Product"}</span>
