@@ -29,6 +29,7 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     const foundProduct = getProductById(id);
     if (foundProduct) {
       setProduct(foundProduct);

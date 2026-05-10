@@ -5,11 +5,13 @@ import { ShieldCheck, CreditCard, Lock, PackageCheck, Headset, Database } from '
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useShop } from '../context/ShopContext';
+import { db } from '../firebase';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
 export default function Home() {
-  const [activeBudget, setActiveBudget] = useState('Under ₹2,000');
   const { products, loading, seedProducts } = useShop();
-
+  const [activeBudget, setActiveBudget] = useState('Under ₹2,000');
+  
   // Filter products for different sections
   // Prefer products marked for homepage latest collection
   const latestProducts = products.some(p => p.homepageLatest) 
@@ -17,10 +19,43 @@ export default function Home() {
     : [...products].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 4);
   const budgetProducts = products.filter(p => {
     if (activeBudget === 'Under ₹2,000') return p.price < 2000;
-    if (activeBudget === '₹2,000 - ₹5,000') return p.price >= 2000 && p.price <= 5000;
-    if (activeBudget === '₹5,000 - ₹10,000') return p.price > 5000 && p.price <= 10000;
-    return p.price > 10000;
+    if (activeBudget === '₹2,000 - ₹5,000') return p.price >= 2000 && p.price < 5000;
+    if (activeBudget === '₹5,000 - ₹10,000') return p.price >= 5000 && p.price < 10000;
+    return p.price >= 10000;
   }).slice(0, 4);
+
+  // Collections State
+  const [sareeCollections, setSareeCollections] = useState([]);
+  const [collectionsLoading, setCollectionsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCollections = async () => {
+      try {
+        const q = query(collection(db, "homeCollections"), orderBy("order", "asc"));
+        const querySnapshot = await getDocs(q);
+        let data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Filter for active items only on frontend
+        data = data.filter(item => item.status === "Active" || !item.status);
+
+        setSareeCollections(data.length > 0 ? data : [
+          { name: 'Kanjivaram', img: '/images/saree_hero.png', badge: '60+ products', order: 1 },
+          { name: 'Mysore Silk', img: '/images/saree_gold.png', badge: '40+ Designs', order: 2 },
+          { name: 'Daily Wear', img: '/images/saree_pastel.png', badge: '80+ Options', order: 3 }
+        ]);
+      } catch (err) {
+        console.error("Error fetching collections:", err);
+        setSareeCollections([
+          { name: 'Kanjivaram', img: '/images/saree_hero.png', badge: '60+ products', order: 1 },
+          { name: 'Mysore Silk', img: '/images/saree_gold.png', badge: '40+ Designs', order: 2 },
+          { name: 'Daily Wear', img: '/images/saree_pastel.png', badge: '80+ Options', order: 3 }
+        ]);
+      } finally {
+        setCollectionsLoading(false);
+      }
+    };
+    fetchCollections();
+  }, []);
 
   return (
     <div className="bg-[#fdfbf7]">
@@ -58,33 +93,39 @@ export default function Home() {
         </div>
         
         <div className="flex flex-wrap justify-center gap-12 md:gap-20">
-          {[
-            { name: 'Kanjivaram', img: '/images/saree_hero.png', badge: '60+ products' },
-            { name: 'Mysore Silk', img: '/images/saree_gold.png', badge: '40+ Designs' },
-            { name: 'Daily Wear', img: '/images/saree_pastel.png', badge: '80+ Options' }
-          ].map((cat, idx) => (
-            <motion.div 
-              key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.2 }}
+          {collectionsLoading ? (
+            <div className="flex justify-center py-10">
+              <div className="w-10 h-10 border-4 border-[#8a1c31] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          ) : sareeCollections.map((cat, idx) => (
+            <Link 
+              key={cat.id || idx} 
+              to={cat.categoryLink ? `/collections?category=${encodeURIComponent(cat.categoryLink)}` : '/collections'}
               className="flex flex-col items-center group cursor-pointer"
             >
-              <div className="relative w-56 h-56 md:w-64 md:h-64 rounded-full overflow-hidden shadow-2xl mb-6 bg-stone-100">
-                {/* Simulated images using existing assets */}
-                <img src={idx === 0 ? '/images/saree_hero.png' : cat.img} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" />
-                <div className="absolute top-6 -right-2 bg-[#8a1c31] text-white text-[11px] font-medium px-4 py-1.5 rounded-full z-10 shadow-lg transform -translate-x-6 tracking-wider">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.2 }}
+                className="flex flex-col items-center relative"
+              >
+                <div className="relative w-56 h-56 md:w-64 md:h-64 rounded-full overflow-hidden shadow-2xl mb-6 bg-stone-100">
+                  <img src={cat.img} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" />
+                </div>
+                {/* Floating Badge - Outside overflow-hidden to prevent clipping */}
+                <div className="absolute top-4 right-0 md:right-2 bg-[#8a1c31] text-white text-[10px] md:text-[11px] font-bold px-4 py-1.5 rounded-full z-20 shadow-xl border border-white/20 tracking-wider">
                   {cat.badge}
                 </div>
-              </div>
-              <h3 className="font-playfair text-xl font-bold text-[#8a1c31] group-hover:text-stone-900 transition-colors">
-                {cat.name}
-              </h3>
-            </motion.div>
+                <h3 className="font-playfair text-xl font-bold text-[#8a1c31] group-hover:text-stone-900 transition-colors">
+                  {cat.name}
+                </h3>
+              </motion.div>
+            </Link>
           ))}
         </div>
       </section>
+
 
       {/* Shop with Complete Peace of Mind */}
       <section className="py-24 px-4 relative overflow-hidden bg-gradient-to-br from-[#4a0814] via-[#6b0f1f] to-[#36050e]">

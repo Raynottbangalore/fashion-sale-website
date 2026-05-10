@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { SlidersHorizontal } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import ProductGrid from '../components/ProductGrid';
 import FilterSidebar from '../components/FilterSidebar';
 import { useShop } from '../context/ShopContext';
@@ -10,6 +11,16 @@ export default function Collections() {
   const [sortBy, setSortBy] = useState('recommended');
   const [filters, setFilters] = useState({ category: 'All', price: 'All' });
   const { products, loading } = useShop();
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const categoryParam = params.get('category');
+    if (categoryParam) {
+      setFilters(prev => ({ ...prev, category: categoryParam }));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [location]);
 
   const filteredProducts = useMemo(() => {
     let result = [...products];

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   ArrowLeft, Edit3, CheckCircle2, Package, 
   Calendar, Hash, ChevronRight, Info
@@ -6,6 +6,10 @@ import {
 
 const ProductDetailView = ({ product, onBack, onEdit }) => {
   const [activeImg, setActiveImg] = useState(product.image);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
   
   // Calculate savings
   const originalPrice = product.originalPrice || product.price;

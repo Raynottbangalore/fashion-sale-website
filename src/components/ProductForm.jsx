@@ -36,9 +36,31 @@ const ProductForm = ({ products = [], onProductAdded, editingProduct, onCancelEd
   const [success, setSuccess] = useState("");
   
   // Dynamic lists (Mocking the database management for now)
-  const [availableCategories, setAvailableCategories] = useState([
-    "Applique/emb", "Banarasi Silk", "cotton", "Cotton", "Cotton/Jamdhani", "Crepe", "Daily Wear", "Dola Bandhej"
-  ]);
+  const [availableCategories, setAvailableCategories] = useState(() => {
+    const saved = localStorage.getItem('availableCategories');
+    return saved ? JSON.parse(saved) : [
+      "Applique/emb", "Banarasi Silk", "cotton", "Cotton", "Cotton/Jamdhani", "Crepe", "Daily Wear", "Dola Bandhej"
+    ];
+  });
+  
+  const [deletedCategories, setDeletedCategories] = useState(() => {
+    const saved = localStorage.getItem('deletedCategories');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
+
+  const [newCat, setNewCat] = useState("");
+  const [showCatInput, setShowCatInput] = useState(false);
+  const [editingCatIdx, setEditingCatIdx] = useState(-1);
+  const [editCatValue, setEditCatValue] = useState("");
+
+  // Persist changes to LocalStorage
+  useEffect(() => {
+    localStorage.setItem('availableCategories', JSON.stringify(availableCategories));
+  }, [availableCategories]);
+
+  useEffect(() => {
+    localStorage.setItem('deletedCategories', JSON.stringify(Array.from(deletedCategories)));
+  }, [deletedCategories]);
 
   useEffect(() => {
     const baseCategories = [
@@ -51,41 +73,74 @@ const ProductForm = ({ products = [], onProductAdded, editingProduct, onCancelEd
     });
     
     setAvailableCategories(prev => {
-      const uniqueCats = Array.from(new Set([...prev, ...baseCategories, ...productCategories])).filter(Boolean);
+      // Merge previous (which includes local edits) with new categories from products
+      // filtering out anything the user explicitly deleted
+      const uniqueCats = Array.from(new Set([...prev, ...baseCategories, ...productCategories]))
+        .filter(cat => cat && !deletedCategories.has(cat));
+      
       uniqueCats.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
       
-      // Only update if there's an actual change in length/content to prevent unnecessary renders
+      // Only update if there's an actual change in content
       if (uniqueCats.length !== prev.length || !uniqueCats.every((val, index) => val === prev[index])) {
         return uniqueCats;
       }
       return prev;
     });
-  }, [products]);
-  const [newCat, setNewCat] = useState("");
-  const [showCatInput, setShowCatInput] = useState(false);
-  const [editingCatIdx, setEditingCatIdx] = useState(-1);
-  const [editCatValue, setEditCatValue] = useState("");
+  }, [products, deletedCategories]);
 
   const handleAddCategory = () => {
     if (newCat && !availableCategories.includes(newCat)) {
-      setAvailableCategories([...availableCategories, newCat]);
+      setAvailableCategories(prev => [...prev, newCat].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())));
+      // Remove from deleted set if it was there before
+      if (deletedCategories.has(newCat)) {
+        const newDeleted = new Set(deletedCategories);
+        newDeleted.delete(newCat);
+        setDeletedCategories(newDeleted);
+      }
       setNewCat("");
       setShowCatInput(false);
     }
   };
 
   const handleSaveEditCategory = (index) => {
-    if (editCatValue && !availableCategories.includes(editCatValue)) {
-      const updated = [...availableCategories];
-      updated[index] = editCatValue;
-      setAvailableCategories(updated);
+    const oldValue = availableCategories[index];
+    const newValue = editCatValue.trim();
+    
+    if (newValue && newValue !== oldValue) {
+      // 1. Update the available categories list (deduplicated)
+      setAvailableCategories(prev => {
+        const filtered = prev.filter(c => c !== oldValue);
+        return Array.from(new Set([...filtered, newValue])).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+      });
+
+      // 2. Update the current form selection (deduplicated)
+      setFormData(prev => ({
+        ...prev,
+        categories: Array.from(new Set(prev.categories.map(c => c === oldValue ? newValue : c)))
+      }));
+
+      // 3. Track old value as deleted to prevent it from coming back via useEffect
+      setDeletedCategories(prev => new Set([...prev, oldValue]));
+
+      setEditingCatIdx(-1);
+    } else if (newValue === oldValue) {
       setEditingCatIdx(-1);
     }
   };
 
-  const handleDeleteItem = (list, setList, item) => {
-    if (window.confirm(`Delete ${item}?`)) {
-      setList(list.filter(i => i !== item));
+  const handleDeleteCategory = (cat) => {
+    if (window.confirm(`Are you sure you want to remove "${cat}" from the selection list? This will only remove it from this page and won't affect other products.`)) {
+      // 1. Remove from available list
+      setAvailableCategories(prev => prev.filter(c => c !== cat));
+      
+      // 2. Remove from current form selection
+      setFormData(prev => ({
+        ...prev,
+        categories: prev.categories.filter(c => c !== cat)
+      }));
+
+      // 3. Track as deleted to prevent it from coming back
+      setDeletedCategories(prev => new Set([...prev, cat]));
     }
   };
   
@@ -411,7 +466,7 @@ const ProductForm = ({ products = [], onProductAdded, editingProduct, onCancelEd
                         </button>
                         <button 
                           type="button" 
-                          onClick={() => handleDeleteItem(availableCategories, setAvailableCategories, cat)}
+                          onClick={() => handleDeleteCategory(cat)}
                           className="text-[10px] font-medium text-red-500 border border-red-100 rounded px-2 py-0.5 hover:bg-red-50 transition-colors whitespace-nowrap"
                         >
                           Delete

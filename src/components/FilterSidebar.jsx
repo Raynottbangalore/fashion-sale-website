@@ -27,17 +27,25 @@ export default function FilterSidebar({ onFilterChange }) {
   };
 
   const categories = useMemo(() => {
-    const baseCategories = [
-      "Applique/emb", "Banarasi Silk", "cotton", "Cotton", "Cotton/Jamdhani", "Crepe", "Daily Wear", "Dola Bandhej"
-    ];
-    
+    // Extract categories from products that are currently available/visible
     const productCategories = (products || []).flatMap(p => {
       if (p.categories && Array.isArray(p.categories)) return p.categories;
       if (p.category) return [p.category];
       return [];
     });
     
-    const uniqueCats = Array.from(new Set([...baseCategories, ...productCategories])).filter(Boolean);
+    // Normalize and unique
+    const categoryMap = new Map(); // lowercase -> original case
+    productCategories.forEach(cat => {
+      if (!cat) return;
+      const lower = cat.toLowerCase();
+      // If we haven't seen this category yet, or if this version has uppercase (preferring formal case)
+      if (!categoryMap.has(lower) || (cat[0] === cat[0].toUpperCase() && categoryMap.get(lower)[0] !== categoryMap.get(lower)[0].toUpperCase())) {
+        categoryMap.set(lower, cat);
+      }
+    });
+
+    const uniqueCats = Array.from(categoryMap.values());
     uniqueCats.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
     
     return ['All', ...uniqueCats];

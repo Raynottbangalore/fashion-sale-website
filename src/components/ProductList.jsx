@@ -215,7 +215,7 @@ const ProductList = ({ products, loading, onProductDeleted, onEdit, onView, onAd
         </div>
 
         {/* Budget Cards Row */}
-        <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-4 bg-white">
+        <div className="p-4 md:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-white">
           {budgetRanges.map((range) => {
             const isActive = activeBudgetTab === range.label;
             
@@ -255,14 +255,14 @@ const ProductList = ({ products, loading, onProductDeleted, onEdit, onView, onAd
               <button
                 key={range.label}
                 onClick={() => setActiveBudgetTab(range.label)}
-                className={`p-6 rounded-xl text-left transition-all border-2 ${theme.bg} ${
+                className={`p-5 md:p-6 rounded-xl text-left transition-all border-2 ${theme.bg} ${
                   isActive ? theme.activeBorder : theme.border
                 } ${isActive ? "shadow-md scale-[1.02]" : "hover:border-stone-300"}`}
               >
-                <p className={`text-3xl font-bold mb-1 ${theme.number}`}>
+                <p className={`text-2xl md:text-3xl font-bold mb-1 ${theme.number}`}>
                   {stats.budgetCounts[range.label]}
                 </p>
-                <p className={`text-[12px] font-bold leading-tight ${theme.label}`}>
+                <p className={`text-[11px] md:text-[12px] font-bold leading-tight ${theme.label}`}>
                   {range.label}
                 </p>
                 <p className="text-[10px] text-stone-400 font-medium mt-1">
@@ -307,38 +307,40 @@ const ProductList = ({ products, loading, onProductDeleted, onEdit, onView, onAd
       {/* Table Section Header & Controls */}
       <div className="space-y-6">
         {/* Homepage Latest Collection Bar */}
-        <div className="bg-[#5D2626] rounded-xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 text-white shadow-lg border-b-4 border-black/20 animate-in fade-in slide-in-from-top duration-500">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-2xl shadow-inner border border-white/10">
+        <div className="bg-[#5D2626] rounded-xl p-6 flex flex-col lg:flex-row items-center lg:items-center justify-between gap-6 text-white shadow-lg border-b-4 border-black/20 animate-in fade-in slide-in-from-top duration-500">
+          <div className="flex items-center gap-4 w-full lg:w-auto">
+            <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-2xl shadow-inner border border-white/10 flex-shrink-0">
               🏠
             </div>
             <div>
               <h2 className="text-xl font-bold tracking-tight text-white">Homepage Latest Collection</h2>
-              <p className="text-white/70 text-[13px] font-medium">Select products to showcase in the "Latest Collection" section on the homepage</p>
+              <p className="text-white/70 text-[13px] font-medium line-clamp-2 md:line-clamp-none">Select products to showcase in the "Latest Collection" section on the homepage</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
-            <div className="bg-black/20 px-4 py-2 rounded-xl flex items-center gap-2 border border-white/10 shadow-inner">
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-3 w-full lg:w-auto">
+            <div className="bg-black/20 px-4 py-2.5 rounded-xl flex items-center gap-2 border border-white/10 shadow-inner">
               <span className="text-xl font-black text-white">{stats.latestCount}</span>
               <span className="text-[10px] font-bold uppercase tracking-widest text-white/40 leading-none">selected</span>
             </div>
             
-            <button 
-              onClick={handleClearLatest}
-              className="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold text-xs transition-all border border-white/10 active:scale-95"
-            >
-              Clear All
-            </button>
-            
-            <button 
-              onClick={handleSaveLatest}
-              disabled={isSavingLatest}
-              className="px-6 py-2.5 bg-white text-[#5D2626] hover:bg-stone-50 rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 disabled:opacity-50 flex items-center gap-2"
-            >
-              {isSavingLatest && <Loader2 size={12} className="animate-spin" />}
-              <span>{isSavingLatest ? "Saving..." : "Save to Homepage"}</span>
-            </button>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <button 
+                onClick={handleClearLatest}
+                className="flex-1 sm:flex-none px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold text-xs transition-all border border-white/10 active:scale-95 whitespace-nowrap"
+              >
+                Clear All
+              </button>
+              
+              <button 
+                onClick={handleSaveLatest}
+                disabled={isSavingLatest}
+                className="flex-1 sm:flex-none px-6 py-2.5 bg-white text-[#5D2626] hover:bg-stone-50 rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap"
+              >
+                {isSavingLatest && <Loader2 size={12} className="animate-spin" />}
+                <span>{isSavingLatest ? "Saving..." : "Save to Homepage"}</span>
+              </button>
+            </div>
           </div>
         </div>
 
